@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 
+//Create Job
 exports.createJob = async (req, res) => {
 
   const { title, description, salary, skills } = req.body;
@@ -30,6 +31,7 @@ exports.createJob = async (req, res) => {
   }
 };
 
+//getJobs
 exports.getJobs = async (req, res) => {
   const db = req.app.locals.db;
   try {
@@ -40,6 +42,7 @@ exports.getJobs = async (req, res) => {
   }
 };
 
+//getJob By ID
 exports.getJobById = async (req, res) => {
   const db = req.app.locals.db;
   try {
