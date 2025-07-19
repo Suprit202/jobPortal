@@ -1,17 +1,19 @@
-$(document).ready(function() {
-  // Fetch jobs
+//Load Page
+function loadPage(page_name){
   $.ajax({
-    url: '/api/jobs',
-    method: 'GET',
-    success: function(jobs) {
-      let html = '';
-      jobs.forEach(job => {
-        html += `<div class="job"><h3>${job.title}</h3><p>${job.description}</p></div>`;
-      });
-      $('#content').html(html);
+    method:'get',
+    url:`../../public/pages/${page_name}`,
+    success:(res)=>{
+      $("section").html(res);
     },
-    error: function(err) {
-      console.error('Error fetching jobs:', err);
+    error:()=>{
+      $("section").html(`<h2>Page Was Not Found !!!</h2>`);
     }
-  });
-});
+  })
+}
+
+//Main Logic
+$(function(){
+  // Load Home Page
+  loadPage("home.html");
+})
