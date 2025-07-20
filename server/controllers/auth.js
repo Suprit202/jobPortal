@@ -25,10 +25,11 @@ exports.register = async (req,res) => {
       createdAt: new Date()
     });
 
-    // Generate JWT
-    const token = jwt.sign({ id: result.insertedId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    // // Generate JWT
+    // const token = jwt.sign({ id: result.insertedId }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    res.cookie('token', token, { httpOnly: true }).json({ success: true });
+    // res.cookie('token', token, { httpOnly: true, sameSite:`None`}).json({ success: true });
+    res.json({success:"true"})
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -52,7 +53,13 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
     
-    res.cookie('token', token, { httpOnly: true }).json({ user });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false, // Use `true` in production (HTTPS only)
+      sameSite: 'Lax', // Use 'None' if frontend/backend are on different domains
+      path:'/',
+      maxAge: 3600000 
+    }).json({ user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

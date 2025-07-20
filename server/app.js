@@ -10,7 +10,11 @@ dotenv.config();
 const app = express();
 
 //middleware
-app.use(cors({credentials:true}));
+app.use(cors({
+  origin: 'http://127.0.0.1:5500',
+  credentials: true
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 
