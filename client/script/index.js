@@ -14,6 +14,6 @@ function loadPage(page_name){
 
 //Main Logic
 $(function(){
-  // Load Home Page
-  loadPage("home.html");
+  // // Load Home Page
+  // loadPage("home.html");
 })

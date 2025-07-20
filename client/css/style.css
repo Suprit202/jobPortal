@@ -10,3 +10,7 @@ body{
   background-size: cover;
   background-repeat: no-repeat;
 }
+
+.body-div{
+  height: 100vh;
+}

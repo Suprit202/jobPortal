@@ -12,7 +12,7 @@
   <script src="./client/script/job.js"></script>
 </head>
 <body>
-  <div>
+  <div class="body-div d-flex flex-column justify-content-between">
     <header>
       <nav class="d-flex justify-content-around fs-5 text-secondary bg-white py-3 position-sticky top-0 shadow-sm">
         <div>
@@ -36,8 +36,24 @@
       </nav>
     </header>
 
-    <section>
-
+    <section class="d-flex flex-column align-items-center">
+      <div class="w-25 bg-light p-4 ">
+          <h2>Register New User</h2>
+          <dl>
+              <dt>User Id</dt>
+              <dd><input type="text" id="user_id" class="form-control"></dd>
+              <dt>User Name</dt>
+              <dd><input type="text" id="user_name" class="form-control"></dd>
+              <dt>Password</dt>
+              <dd><input type="password" id="password" class="form-control"></dd>
+              <dt>Mobile</dt>
+              <dd><input type="text" id="mobile" class="form-control"></dd>
+          </dl>
+          <button class="btn btn-primary w-100" id="btnRegister">Register</button>
+          <div>
+              <button id="btnSignIn" class="btn btn-link">Existing User</button>
+          </div>
+      </div>
     </section>
 
     <footer>
