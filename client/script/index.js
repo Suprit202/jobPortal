@@ -14,6 +14,16 @@ function loadPage(page_name){
 
 //Main Logic
 $(function(){
-  // // Load Home Page
-  // loadPage("home.html");
+  // Load Home Page
+  loadPage("home.html");
+
+  //New User button-click - on home
+  $(document).on('click','#btnSignIn',()=>{
+    loadPage("register.html")
+  })
+
+  //New User button-click - on home
+  $(document).on('click','#btnLogIn ',()=>{
+    loadPage("login.html")
+  })
 })
