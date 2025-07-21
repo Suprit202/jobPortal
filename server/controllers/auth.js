@@ -25,11 +25,16 @@ exports.register = async (req,res) => {
       createdAt: new Date()
     });
 
-    // // Generate JWT
-    // const token = jwt.sign({ id: result.insertedId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    // res.cookie('token', token, { httpOnly: true, sameSite:`None`}).json({ success: true });
-    res.json({success:"true"})
+    //JWT Token
+    const token = jwt.sign({ id: result.insertedId.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false, // Use `true` in production (HTTPS only)
+      sameSite: 'Lax', // Use 'None' if frontend/backend are on different domains
+      path:'/',
+      maxAge: 3600000 
+    }).json({success:"true"});
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -51,6 +56,8 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
+
+    //JWT Token
     const token = jwt.sign({ id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
     
     res.cookie('token', token, {
@@ -59,8 +66,28 @@ exports.login = async (req, res) => {
       sameSite: 'Lax', // Use 'None' if frontend/backend are on different domains
       path:'/',
       maxAge: 3600000 
-    }).json({ user });
+    }).json({user});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.checkAuth = async (req, res) =>{
+  try {
+    const db = req.app.locals.db;
+    const user = await db.collection('users').findOne({_id:new ObjectId(req.user.id)});
+
+    if(!user){
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      email: user.email,
+      name: user.name,
+      role: user.role
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: err.message });
+  }
+}

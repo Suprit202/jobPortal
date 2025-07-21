@@ -3,7 +3,7 @@ const {ObjectId} = require('mongodb');
 
 exports.authenticate = async(req, res, next) => {
   try {
-    const token = req.cookies.token;
+    let token = req.cookies.token;
 
     if (!token) {
       return res.status(401).json({error: 'Not Authenticated!'});
@@ -16,7 +16,6 @@ exports.authenticate = async(req, res, next) => {
     if (!user) throw new Error('User not found');
 
     req.user = user;
-    
     next();
 
   } catch (error) {

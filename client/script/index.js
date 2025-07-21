@@ -15,11 +15,17 @@ function loadPage(page_name){
 //Check Authentication
 function checkAuthStatus() {
   $.ajax({
+    method:'POST',
     url: 'http://localhost:5000/api/jobs/authenticate',
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-    success: function(user) {
-      alert(`Authentication Successful`)
-      if (user) $('#user-email').text(user.email);
+    xhrFields: {
+      withCredentials: true
+    },
+    success: (res) => {
+      alert(`Authentication Successful`);
+      if (res.user) $('#user-email').text(res.user.email);
+    },
+    error: (xhr) => {
+      alert(`Authentication Failed: ${xhr.responseJSON?.error || xhr.statusText}`);
     }
   });
 }
@@ -73,16 +79,13 @@ $(function(){
       url:`http://localhost:5000/api/auth/login`,
       contentType: 'application/json',
       xhrFields: {
-        withCredentials: true // REQUIRED for cookies
+        withCredentials: true
       },
-      crossDomain: true,
       data: JSON.stringify(formData),
       success:(res) => {
-        
         if(res.token){
           localStorage.setItem('token',res.token);
         }
-
         checkAuthStatus();
         loadPage("jobs.html")
       }
