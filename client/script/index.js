@@ -95,15 +95,11 @@ $(function(){
       url:`http://localhost:5000/api/auth/login`,
       contentType: 'application/json',
       data: JSON.stringify(formData),
-      // xhrFields: {
-      //   withCredentials: true
-      // },
       success:(res) => {
         if(res.token){
           localStorage.setItem('token', res.token);
         }
 
-        // console.log(localStorage.getItem('token'))
         checkAuthStatus();
 
         loadPage("jobs.html")
@@ -126,4 +122,10 @@ $(function(){
     $('.auth-section').removeClass('d-none');
     $('.user-section').addClass('d-none');
   });
+
+  //Job Form Displayed
+  $(document).on('click','#createJobBtn',()=>{
+    loadPage("createJob.html");
+
+  })
 })
