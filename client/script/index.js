@@ -132,6 +132,5 @@ $(function(){
   //Job Form Displayed
   $(document).on('click','#btnCancel',()=>{
     loadPage("jobs.html");
-
   })
 })
