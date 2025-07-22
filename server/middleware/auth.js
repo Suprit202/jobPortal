@@ -3,7 +3,8 @@ const {ObjectId} = require('mongodb');
 
 exports.authenticate = async(req, res, next) => {
   try {
-    let token = req.cookies.token;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({error: 'Not Authenticated!'});

@@ -14,18 +14,34 @@ function loadPage(page_name){
 
 //Check Authentication
 function checkAuthStatus() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  
+  // console.log(token);
+  
   $.ajax({
-    method:'POST',
-    url: 'http://localhost:5000/api/jobs/authenticate',
-    xhrFields: {
-      withCredentials: true
+    method:'GET',
+    url: 'http://localhost:5000/api/auth/check',
+    headers: {
+       'Authorization': `Bearer ${token}` 
     },
-    success: (res) => {
-      alert(`Authentication Successful`);
-      if (res.user) $('#user-email').text(res.user.email);
+    success: function(res) {
+       console.log(res.user); // Debug log
+      if(res.user)
+      {
+        $('.auth-section').addClass('d-none');
+        $('.user-section').removeClass('d-none');
+        $('#user-email').text(res.user.email);
+      }
     },
-    error: (xhr) => {
-      alert(`Authentication Failed: ${xhr.responseJSON?.error || xhr.statusText}`);
+    error: function(xhr) {
+        if (xhr.status === 401) { // Unauthorized
+        localStorage.removeItem('token');
+        $('.auth-section').addClass('d-none');
+        $('.user-section').removeClass('d-none');
+      }
+      // For other errors (500, network issues), keep the token
+      console.error('Auth check failed:', xhr.status, xhr.responseText);
     }
   });
 }
@@ -78,19 +94,36 @@ $(function(){
       method:'POST',
       url:`http://localhost:5000/api/auth/login`,
       contentType: 'application/json',
-      xhrFields: {
-        withCredentials: true
-      },
       data: JSON.stringify(formData),
+      // xhrFields: {
+      //   withCredentials: true
+      // },
       success:(res) => {
         if(res.token){
-          localStorage.setItem('token',res.token);
+          localStorage.setItem('token', res.token);
         }
+
+        // console.log(localStorage.getItem('token'))
         checkAuthStatus();
+
         loadPage("jobs.html")
+      },
+      error: function(xhr) {
+        alert(xhr.responseJSON?.error || 'Login failed');
       }
     })
   })
 
+  //OnClick - LogOut
+  $(document).on('click', '#logoutBtn', function() {
 
+    loadPage("home.html");
+    // Clear both client-side storage
+    localStorage.removeItem('token');
+    document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    
+    // Update UI
+    $('.auth-section').removeClass('d-none');
+    $('.user-section').addClass('d-none');
+  });
 })

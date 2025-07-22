@@ -11,9 +11,17 @@ const app = express();
 
 //middleware
 app.use(cors({
-  origin: 'http://127.0.0.1:5500',
-  credentials: true
+  // origin: 'http://127.0.0.1:5500',
+  allowedHeaders: ['Content-Type', 'Authorization'] 
 }));
+
+// Allow all origins
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
 app.use(express.json());
 app.use(cookieParser());

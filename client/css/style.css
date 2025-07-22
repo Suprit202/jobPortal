@@ -15,6 +15,6 @@ body{
   height: 100vh;
 }
 
-.d-none {
-  display: none !important;
+.d-none{
+  display: none;
 }

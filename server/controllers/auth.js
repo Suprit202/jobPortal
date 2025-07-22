@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
       sameSite: 'Lax', // Use 'None' if frontend/backend are on different domains
       path:'/',
       maxAge: 3600000 
-    }).json({user});
+    }).json({user, token});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -75,16 +75,17 @@ exports.login = async (req, res) => {
 exports.checkAuth = async (req, res) =>{
   try {
     const db = req.app.locals.db;
-    const user = await db.collection('users').findOne({_id:new ObjectId(req.user.id)});
+
+    const user = await db.collection('users').findOne({_id:new ObjectId(req.user._id)});
 
     if(!user){
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({
-      email: user.email,
-      name: user.name,
-      role: user.role
+    res.json({user
+      // email: user.email,
+      // name: user.name,
+      // role: user.role
     });
 
   } catch (error) {
