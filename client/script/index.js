@@ -128,4 +128,10 @@ $(function(){
     loadPage("createJob.html");
 
   })
+
+  //Job Form Displayed
+  $(document).on('click','#btnCancel',()=>{
+    loadPage("jobs.html");
+
+  })
 })
