@@ -9,7 +9,14 @@
               <dt>Password</dt>
               <dd><input type="password" id="password" class="form-control"></dd>
               <dt>Role</dt>
-              <dd><input type="text" id="role" class="form-control"></dd>
+              <dd>
+                <select class="form-select" id="role">
+                  <option selected>--Select--</option>
+                  <option value="User">User</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Recruiter">Recruiter</option>
+                </select>
+              </dd>  
           </dl>
           <button class="btn btn-primary w-100" id="btnRegister">Register</button>
           <div>
