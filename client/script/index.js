@@ -46,6 +46,37 @@ function checkAuthStatus() {
   });
 }
 
+//loadJobs Function
+function loadJobs(){
+  $.ajax({
+      method:'GET',
+      url:'http://localhost:5000/api/jobs/getJobs',
+      success: (jobs) => {
+        let html = '';
+
+        if (jobs.length == 0) {
+          html += '<p>No Jobs Availanle</p>';
+        } else {
+          jobs.map(job => {
+            html += `
+              <div class="bg-white text-black p-4 my-2 rounded rounded-3">
+                <h3 class ="font-monospace fw-bold">${job.title}</h3>
+                <p class = "fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
+                <p class = "fw-semibold"> Salary: <span class="fw-light">${job.salary}</span></p>
+                <p class = "fw-semibold"> Skills Required: <span class="fw-light">${job.skills}</span></p>
+              </div>
+          `;
+          });
+        }
+
+        $("#jobSection").html(html);
+      },
+      error:()=>{
+        $("#jobSection").html(`<p>Error loding jobs</p>`);
+      }
+    });
+  }
+
 //Main Logic
 $(function(){
   // Load Home Page
@@ -99,10 +130,12 @@ $(function(){
         if(res.token){
           localStorage.setItem('token', res.token);
         }
-
+        
         checkAuthStatus();
 
-        loadPage("jobs.html")
+        loadJobs();
+
+        loadPage("jobs.html");
       },
       error: function(xhr) {
         alert(xhr.responseJSON?.error || 'Login failed');
@@ -132,5 +165,31 @@ $(function(){
   //Job Form Displayed
   $(document).on('click','#btnCancel',()=>{
     loadPage("jobs.html");
+  })
+
+  //Post Job- onClick btn
+  $(document).on('click','#btnPost',()=>{
+    const formData = {
+      title: $('#jobTitle').val(),
+      description: $('#jobDes').val(),
+      salary: $('#jobSalary').val(),
+      skills: $('#jobSkill').val().split(',').map(skill => skill.trim()),
+    };
+
+    $.ajax({
+      method:'POST',
+      url:'http://localhost:5000/api/jobs/createJob',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}` 
+      },
+      contentType: 'application/json',
+      data: JSON.stringify(formData),
+      success:()=>{
+        alert('Job Created Successfully!');
+      },
+      error:(xhr) => {
+        alert(xhr.responseJSON?.error || 'job creation faild');
+      }
+    })
   })
 })
