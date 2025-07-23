@@ -26,7 +26,7 @@ function checkAuthStatus() {
        'Authorization': `Bearer ${token}` 
     },
     success: function(res) {
-       console.log(res.user); // Debug log
+      //  console.log(res.user); // Debug log
       if(res.user)
       {
         $('.auth-section').addClass('d-none');
