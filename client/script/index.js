@@ -59,7 +59,7 @@ function loadJobs(){
         } else {
           jobs.map(job => {
             html += `
-              <div class="bg-white text-black p-4 my-2 rounded rounded-3">
+              <div class="bg-white text-black p-4 my-2 rounded rounded-3 shadow-sm">
                 <h3 class ="font-monospace fw-bold">${job.title}</h3>
                 <p class = "fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
                 <p class = "fw-semibold"> Salary: <span class="fw-light">${job.salary}</span></p>
@@ -114,7 +114,8 @@ $(function(){
   })
 
   //Log in Button Click - user Login
-  $(document).on('click','#btnUserLogIn',()=>{
+  $(document).on('click','#btnUserLogIn',(e)=>{
+    e.preventDefault();
 
     const formData ={
       email:$('#login-email').val(),
@@ -162,13 +163,16 @@ $(function(){
 
   })
 
-  //Job Form Displayed
-  $(document).on('click','#btnCancel',()=>{
+  //Cancel btn -- on job creation
+  $(document).on('click','#btnCancel',(e)=>{
+    e.preventDefault();
+    loadJobs();
     loadPage("jobs.html");
   })
 
   //Post Job- onClick btn
-  $(document).on('click','#btnPost',()=>{
+  $(document).on('click','#btnPost',(e)=>{
+    e.preventDefault();
     const formData = {
       title: $('#jobTitle').val(),
       description: $('#jobDes').val(),
@@ -186,6 +190,8 @@ $(function(){
       data: JSON.stringify(formData),
       success:()=>{
         alert('Job Created Successfully!');
+        loadJobs();
+        loadPage("jobs.html");
       },
       error:(xhr) => {
         alert(xhr.responseJSON?.error || 'job creation faild');
