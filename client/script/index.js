@@ -47,35 +47,45 @@ function checkAuthStatus() {
 }
 
 //loadJobs Function
-function loadJobs(){
+function loadJobs(callback) {
   $.ajax({
-      method:'GET',
-      url:'http://localhost:5000/api/jobs/getJobs',
-      success: (jobs) => {
-        let html = '';
+    method: 'GET',
+    url: 'http://localhost:5000/api/jobs/getJobs',
+    success: (jobs) => {
+      let html = '';
 
-        if (jobs.length == 0) {
-          html += '<p>No Jobs Availanle</p>';
-        } else {
-          jobs.map(job => {
-            html += `
-              <div class="bg-white text-black p-4 my-2 rounded rounded-3 shadow-sm">
-                <h3 class ="font-monospace fw-bold">${job.title}</h3>
-                <p class = "fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
-                <p class = "fw-semibold"> Salary: <span class="fw-light">${job.salary}</span></p>
-                <p class = "fw-semibold"> Skills Required: <span class="fw-light">${job.skills}</span></p>
-              </div>
-          `;
-          });
-        }
-
-        $("#jobSection").html(html);
-      },
-      error:()=>{
-        $("#jobSection").html(`<p>Error loding jobs</p>`);
+      if (jobs.length === 0) {
+        html += '<p>No Jobs Available</p>';
+      } else {
+        jobs.forEach(job => {
+          html += `
+                  <div id= "jobSection" class="mx-4 my-4">
+                      <div class="bg-white position-relative text-black p-4 my-2 rounded rounded-3 shadow-sm">
+                        <h3 class="font-monospace fw-bold">${job.title}</h3>
+                        <p class="fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
+                        <p class="fw-semibold">Salary: <span class="fw-light">${job.salary}</span></p>
+                        <p class="fw-semibold">Skills Required: <span class="fw-light">${job.skills}</span></p>
+                        <div class="me-3 mb-3 position-absolute bottom-0 end-0">
+                          <span><button id='btnEdit' class="btn btn-warning"><span class="bi bi-pen"></span></button></span>
+                          <span><button id='btnDelete' class="btn btn-danger ms-1"><span class="bi bi-trash"></span></button></span>
+                        </div>
+                      </div>
+                  </div>
+                 `;
+        });
       }
-    });
-  }
+
+      $('#jobSection').html(html);
+
+      callback(html);
+      
+    },
+    error: () => {
+      $("#jobSection").html(`<p>Error loading jobs</p>`);
+    }
+  });
+}
+
 
 //Main Logic
 $(function(){
@@ -134,9 +144,8 @@ $(function(){
         
         checkAuthStatus();
 
-        loadJobs();
+        loadJobs(loadPage('jobs.html'));
 
-        loadPage("jobs.html");
       },
       error: function(xhr) {
         alert(xhr.responseJSON?.error || 'Login failed');
@@ -166,8 +175,9 @@ $(function(){
   //Cancel btn -- on job creation
   $(document).on('click','#btnCancel',(e)=>{
     e.preventDefault();
-    loadJobs();
-    loadPage("jobs.html");
+
+    loadJobs(loadPage('jobs.html'));
+
   })
 
   //Post Job- onClick btn
@@ -189,9 +199,8 @@ $(function(){
       contentType: 'application/json',
       data: JSON.stringify(formData),
       success:()=>{
-        alert('Job Created Successfully!');
-        loadJobs();
-        loadPage("jobs.html");
+        alert('Job Created Successfully! Check Job Board');
+        loadJobs(loadPage('jobs.html'));
       },
       error:(xhr) => {
         alert(xhr.responseJSON?.error || 'job creation faild');

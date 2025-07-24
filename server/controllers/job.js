@@ -8,7 +8,7 @@ exports.createJob = async (req, res) => {
   const jobs = db.collection('jobs');
 
   try {
-    console.log('User in request:', req.user);
+    // console.log('User in request:', req.user);
 
     if (!req.user || !req.user._id) {
       return res.status(401).json({ error: 'User not authenticated' });
