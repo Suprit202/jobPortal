@@ -97,8 +97,6 @@ exports.deleteJob = async (req, res) => {
   const id =  new ObjectId(req.params.id);
   const jobs = db.collection('jobs');
 
-  console.log(id);
-
   try {
     // console.log('User in request:', req.user);
 

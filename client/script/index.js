@@ -1,3 +1,4 @@
+//loadPage Function
 function loadPage(page_name, callback = null) {
   $.ajax({
     method: 'GET',
@@ -13,7 +14,6 @@ function loadPage(page_name, callback = null) {
     }
   });
 }
-
 
 //Check Authentication
 function checkAuthStatus() {
@@ -33,6 +33,7 @@ function checkAuthStatus() {
       if(res.user)
       {
         $('.auth-section').addClass('d-none');
+        $('.search-bar').removeClass('d-none');
         $('.user-section').removeClass('d-none');
         $('#user-email').text(res.user.email);
       }
@@ -91,6 +92,52 @@ function loadJobs(callback = null) {
     }
   });
 }
+
+//Search Job Function
+function searchJobs(keyword) {
+  $.ajax({
+    method: 'GET',
+    url: 'http://localhost:5000/api/jobs/getJobs',
+    success: (jobs) => {
+      let html = '';
+      const search = keyword.trim().toLowerCase();
+
+      const filteredJobs = jobs.filter(job =>
+        job.title.toLowerCase().includes(search) ||
+        job.description.toLowerCase().includes(search) ||
+        job.location.toLowerCase().includes(search)
+      );
+
+      if (filteredJobs.length === 0) {
+        html += '<p class="text-center">No matching jobs found.</p>';
+      } else {
+        filteredJobs.forEach(job => {
+          html += `
+            <div class="mx-4 my-4">
+              <div class="bg-white position-relative text-black p-4 my-2 rounded rounded-3 shadow-sm">
+                <h3 class="font-monospace fw-bold">${job.title}</h3>
+                <p class="fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
+                <p class="fw-semibold">Salary: <span class="fw-light">${job.salary}</span></p>
+                <p class="fw-semibold">Skills Required: <span class="fw-light">${job.skills}</span></p>
+                <p class="fw-semibold">Job Location: <span class="fw-light">${job.location}</span></p>
+                <div class="me-3 mb-3 position-absolute bottom-0 end-0">
+                  <button class="btn btn-warning btnEditJob" value="${job._id}"><span class="bi bi-pen"></span></button>
+                  <button class="btn btn-danger btnDeleteJob ms-1" value="${job._id}"><span class="bi bi-trash"></span></button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      $('#jobSection').html(html);
+    },
+    error: () => {
+      $('#jobSection').html(`<p class="text-danger text-center">Error loading jobs.</p>`);
+    }
+  });
+}
+
 
 
 //Main Logic
@@ -164,6 +211,7 @@ $(function(){
   //OnClick - LogOut
   $(document).on('click', '#logoutBtn', function() {
     const choice = confirm(`Are you really want sign out?`);
+    
     if(choice === true)
     {
       loadPage("home.html");
@@ -308,5 +356,20 @@ $(function(){
         loadJobs(); // ✅ reload after page is loaded
       });
   })
+
+  // Search on button click
+  $(document).on('click', '#searchBtn', function () {
+  const keyword = $('#searchInput').val();
+  searchJobs(keyword);
+  });
+  
+  // Optional: Search on Enter key
+  $('#searchInput').on('keypress', function (e) {
+    if (e.which === 13) {
+      const keyword = $(this).val();
+      searchJobs(keyword);
+    }
+  });
+
 
 })
