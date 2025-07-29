@@ -11,7 +11,7 @@ exports.register = async (req,res) => {
   try {
     //check existing user
     const existingUser = await users.findOne({email});
-    if(existingUser) return res.status(400).json({error: 'Email already in use'})
+    if(existingUser) return res.status(400).json({error: 'Email already in use'});
   
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,10 +29,10 @@ exports.register = async (req,res) => {
     const token = jwt.sign({ id: result.insertedId.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
     
     res.cookie('token', token, {
-      httpOnly: true,
+      httpOnly: true, //Prevents JavaScript on the client side from accessing the cookie via (document.cookie); Helps protect against XSS attacks.
       secure: false, // Use `true` in production (HTTPS only)
       sameSite: 'Lax', // Use 'None' if frontend/backend are on different domains
-      path:'/',
+      path:'/', //'/' means the cookie is valid for entire domain.
       maxAge: 3600000 
     }).json({success:"true"});
 

@@ -172,6 +172,9 @@ $(function(){
       success:() => {
         alert(`Registration Successful! please Login.`);
         loadPage("login.html");
+      },
+      error: function(xhr) {
+        alert(xhr.responseJSON?.error || 'Login failed');
       }
     })
   })
@@ -359,13 +362,13 @@ $(function(){
 
   // Search on button click
   $(document).on('click', '#searchBtn', function () {
-  const keyword = $('#searchInput').val();
-  searchJobs(keyword);
+    const keyword = $('#searchInput').val();
+    searchJobs(keyword);
   });
   
   // Optional: Search on Enter key
   $('#searchInput').on('keypress', function (e) {
-    if (e.which === 13) {
+    if (e.which === 13) { //13 is keycode of  'Enter -> key'
       const keyword = $(this).val();
       searchJobs(keyword);
     }
