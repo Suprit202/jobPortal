@@ -31,7 +31,7 @@ function checkAuthStatus() {
   const token = localStorage.getItem('token');
   if (!token) return;
   
-  // console.log(token);
+  // console.log(token);  //debug log
   
   $.ajax({
     method:'GET',
@@ -90,6 +90,7 @@ function loadJobs(callback = null) {
                         <div class="me-3 mb-3 position-absolute bottom-0 end-0">
                           <span><button value=${job._id} class="btnEditJob btn btn-warning d-none"><span class="bi bi-pen"></span></button></span>
                           <span><button value=${job._id} class="btnDeleteJob btn btn-danger ms-1 d-none"><span class="bi bi-trash"></span></button></span>
+                          <span><button value=${job._id} class="btnApplyJob btn btn-primary ms-1"><span class="bi bi-check2-circle">Apply</span></button></span>
                         </div>
                       </div>
                   </div>
@@ -99,10 +100,12 @@ function loadJobs(callback = null) {
 
       $('#jobSection').html(html);
 
-      // ✅ Role check: Only admin can see edit/delete
+      // ✅ Role check: Only admin can see edit/delete/apply
       const decoded = parseJwt(token);
+
       if (decoded.role === 'admin') {
         $('.btnEditJob, .btnDeleteJob').removeClass('d-none');
+        $('.btnApplyJob').addClass('d-none');
       }
 
       if (typeof callback === 'function') {
@@ -130,7 +133,9 @@ function searchJobs(keyword) {
     success: (jobs) => {
       let html = '';
       const search = keyword.trim().toLowerCase();
-
+      const isAdmin = parseJwt(token).role === "admin";
+      console.log(parseJwt(token).role === "admin")
+      
     const filteredJobs = jobs.filter(job =>
       (job.title?.toLowerCase().includes(search)) ||
       (job.description?.toLowerCase().includes(search)) ||
@@ -150,8 +155,10 @@ function searchJobs(keyword) {
                 <p class="fw-semibold">Skills Required: <span class="fw-light">${job.skills}</span></p>
                 <p class="fw-semibold">Job Location: <span class="fw-light">${job.location}</span></p>
                 <div class="me-3 mb-3 position-absolute bottom-0 end-0">
-                  <button class="btn btn-warning btnEditJob" value="${job._id}"><span class="bi bi-pen"></span></button>
-                  <button class="btn btn-danger btnDeleteJob ms-1" value="${job._id}"><span class="bi bi-trash"></span></button>
+                  ${(isAdmin)?
+                    `<span><button value=${job._id} class="btnEditJob btn btn-warning"><span class="bi bi-pen"></span></button></span>
+                    <span><button value=${job._id} class="btnDeleteJob btn btn-danger ms-1"><span class="bi bi-trash"></span></button></span>`
+                    :`<span><button value=${job._id} class="btnApplyJob btn btn-primary ms-1"><span class="bi bi-check2-circle">Apply</span></button></span>`}
                 </div>
               </div>
             </div>
@@ -159,7 +166,18 @@ function searchJobs(keyword) {
         });
       }
 
-      $('#jobSection').html(html);
+       $('#jobSection').html(html);
+
+
+      // setTimeout(()=>{
+      //     // ✅ Role check: Only admin can see edit/delete/apply
+      //     const decoded = parseJwt(token);
+      //     if (decoded.role === 'admin') {
+      //       $('.btnEditJob, .btnDeleteJob').removeClass('d-none');
+      //       $('.btnApplyJob').addClass('d-none');
+      //     }
+      // },0)
+
     },
     error: () => {
       $('#jobSection').html(`<p class="text-danger text-center">Error loading jobs.</p>`);
@@ -283,13 +301,6 @@ $(function(){
     e.preventDefault();
 
     loadPage('jobs.html', () => {
-      // const decoded = parseJwt(res.token)
-      // if (decoded.role === 'admin') {
-      //   $('#createJobBtn').removeClass('d-none'); // show admin-only buttons/sections
-      // } else {
-      //   $('#createJobBtn').addClass('d-none'); // hide them
-      // }
-
       loadJobs(); // ✅ reload after page is loaded
     });
 
