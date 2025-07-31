@@ -21,12 +21,14 @@ exports.register = async (req,res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'seeker',
+      role: role || 'user',
       createdAt: new Date()
     });
 
+    const user = await users.findOne({ _id: result.insertedId });
+
     //JWT Token
-    const token = jwt.sign({ id: result.insertedId.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id.toString(), role: user.role}, process.env.JWT_SECRET, { expiresIn: '1h' });
     
     res.cookie('token', token, {
       httpOnly: true, //Prevents JavaScript on the client side from accessing the cookie via (document.cookie); Helps protect against XSS attacks.
@@ -58,7 +60,7 @@ exports.login = async (req, res) => {
 
 
     //JWT Token
-    const token = jwt.sign({ id: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user._id.toString(),role: user.role}, process.env.JWT_SECRET, { expiresIn: '1h' });
     
     res.cookie('token', token, {
       httpOnly: true,

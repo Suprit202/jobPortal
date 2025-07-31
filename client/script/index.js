@@ -1,5 +1,16 @@
+//Decode token
+function parseJwt(token) {
+  try {
+    return JSON.parse(atob(token.split('.')[1]));
+  } catch (e) {
+    console.error("Invalid JWT token", e);
+    return {};
+  }
+}
+
 //loadPage Function
 function loadPage(page_name, callback = null) {
+  
   $.ajax({
     method: 'GET',
     url: `../../public/pages/${page_name}`,
@@ -52,9 +63,15 @@ function checkAuthStatus() {
 
 //loadJobs Function
 function loadJobs(callback = null) {
+
+  const token = localStorage.getItem('token');
+
   $.ajax({
     method: 'GET',
     url: 'http://localhost:5000/api/jobs/getJobs',
+    headers: {
+      'Authorization': `Bearer ${token}` // ✅ Send token in headers
+    },
     success: (jobs) => {
       let html = '';
 
@@ -63,7 +80,7 @@ function loadJobs(callback = null) {
       } else {
         jobs.forEach(job => {
           html += `
-                  <div class="mx-4 my-4">
+                  <div>
                       <div class="bg-white position-relative text-black p-4 my-2 rounded rounded-3 shadow-sm">
                         <h3 class="font-monospace fw-bold">${job.title}</h3>
                         <p class="fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
@@ -71,8 +88,8 @@ function loadJobs(callback = null) {
                         <p class="fw-semibold">Skills Required: <span class="fw-light">${job.skills}</span></p>
                         <p class="fw-semibold">Job Location: <span class="fw-light">${job.location}</span></p>
                         <div class="me-3 mb-3 position-absolute bottom-0 end-0">
-                          <span><button value=${job._id} class="btnEditJob btn btn-warning"><span class="bi bi-pen"></span></button></span>
-                          <span><button value=${job._id} class="btnDeleteJob btn btn-danger ms-1"><span class="bi bi-trash"></span></button></span>
+                          <span><button value=${job._id} class="btnEditJob btn btn-warning d-none"><span class="bi bi-pen"></span></button></span>
+                          <span><button value=${job._id} class="btnDeleteJob btn btn-danger ms-1 d-none"><span class="bi bi-trash"></span></button></span>
                         </div>
                       </div>
                   </div>
@@ -81,6 +98,12 @@ function loadJobs(callback = null) {
       }
 
       $('#jobSection').html(html);
+
+      // ✅ Role check: Only admin can see edit/delete
+      const decoded = parseJwt(token);
+      if (decoded.role === 'admin') {
+        $('.btnEditJob, .btnDeleteJob').removeClass('d-none');
+      }
 
       if (typeof callback === 'function') {
         callback();
@@ -95,25 +118,31 @@ function loadJobs(callback = null) {
 
 //Search Job Function
 function searchJobs(keyword) {
+
+  const token = localStorage.getItem('token');
+
   $.ajax({
     method: 'GET',
     url: 'http://localhost:5000/api/jobs/getJobs',
+    headers: {
+      'Authorization': `Bearer ${token}` // ✅ Send token in headers
+    },
     success: (jobs) => {
       let html = '';
       const search = keyword.trim().toLowerCase();
 
-      const filteredJobs = jobs.filter(job =>
-        job.title.toLowerCase().includes(search) ||
-        job.description.toLowerCase().includes(search) ||
-        job.location.toLowerCase().includes(search)
-      );
+    const filteredJobs = jobs.filter(job =>
+      (job.title?.toLowerCase().includes(search)) ||
+      (job.description?.toLowerCase().includes(search)) ||
+      (job.location?.toLowerCase().includes(search))
+    ); //means that one of the fields like job.title, job.description, or job.location is null or undefined.
 
       if (filteredJobs.length === 0) {
         html += '<p class="text-center">No matching jobs found.</p>';
       } else {
         filteredJobs.forEach(job => {
           html += `
-            <div class="mx-4 my-4">
+            <div>
               <div class="bg-white position-relative text-black p-4 my-2 rounded rounded-3 shadow-sm">
                 <h3 class="font-monospace fw-bold">${job.title}</h3>
                 <p class="fw-semibold">Description: <span class="fw-light fw-bold">${job.description}</span></p>
@@ -140,6 +169,8 @@ function searchJobs(keyword) {
 
 
 
+
+
 //Main Logic
 $(function(){
   // Load Home Page
@@ -152,7 +183,7 @@ $(function(){
 
   //New User button-click - on home
   $(document).on('click','#btnLogIn ',()=>{
-    loadPage("login.html")
+    loadPage("login.html");
   })
 
   //Register Button Click - Post Data to Users
@@ -201,6 +232,17 @@ $(function(){
         checkAuthStatus();
 
         loadPage('jobs.html', () => {
+
+          const decoded = parseJwt(res.token);
+
+          if (decoded.role === 'admin') {
+            $('#createJobBtn').removeClass('d-none'); // show admin-only buttons/sections
+            $('.btnEditJob').removeClass('d-none'); // show admin-only buttons/sections
+            $('.btnDeleteJob').removeClass('d-none'); // show admin-only buttons/sections
+          } else {
+            $('#createJobBtn').addClass('d-none'); // hide them
+          }
+
           loadJobs(); // ✅ reload after page is loaded
         });
 
@@ -227,6 +269,7 @@ $(function(){
     // Update UI
     $('.auth-section').removeClass('d-none');
     $('.user-section').addClass('d-none');
+    $('.search-bar').addClass('d-none');
   });
 
   //Job Form Displayed
@@ -240,6 +283,13 @@ $(function(){
     e.preventDefault();
 
     loadPage('jobs.html', () => {
+      // const decoded = parseJwt(res.token)
+      // if (decoded.role === 'admin') {
+      //   $('#createJobBtn').removeClass('d-none'); // show admin-only buttons/sections
+      // } else {
+      //   $('#createJobBtn').addClass('d-none'); // hide them
+      // }
+
       loadJobs(); // ✅ reload after page is loaded
     });
 
@@ -248,6 +298,9 @@ $(function(){
   //Post Job- onClick btn
   $(document).on('click','#btnPost',(e)=>{
     e.preventDefault();
+
+    const token = localStorage.getItem('token');
+
     const formData = {
       title: $('#jobTitle').val(),
       description: $('#jobDes').val(),
@@ -266,9 +319,11 @@ $(function(){
       data: JSON.stringify(formData),
       success:()=>{
         alert('Job Created Successfully! Check Job Board');
-        loadPage('jobs.html', () => {
-          loadJobs(); // ✅ reload after page is loaded
-        });
+
+      loadPage('jobs.html', () => {        
+        loadJobs(); // ✅ reload after page is loaded
+      });
+
       },
       error:(xhr) => {
         alert(xhr.responseJSON?.error || 'job creation faild');
@@ -278,6 +333,9 @@ $(function(){
 
   //Edit job window- onClick edit
   $(document).on('click', '.btnEditJob', function () {
+
+    const token = localStorage.getItem('token');
+
     const jobId = $(this).val(); // ✅ this gets the value of the clicked button
   
     // Optionally, load the page after the job is fetched
@@ -287,6 +345,9 @@ $(function(){
       $.ajax({
         method: 'GET',
         url: `http://localhost:5000/api/jobs/getJobById/${jobId}`,
+        headers: {
+              'Authorization': `Bearer ${token}` // ✅ Send token in headers
+        },
         contentType: 'application/json',
         success: (job) => {
           $('#editJobTitle').val(job.title);
@@ -305,7 +366,9 @@ $(function(){
 
 
   //Edit content saved- onClick save
-  $(document).on('click','#btnEditSave',(e)=>{
+  $(document).on('click','#btnEditSave',()=>{
+
+    const token = localStorage.getItem('token');
 
     var formData = {
         title: $('#editJobTitle').val(),
@@ -319,12 +382,14 @@ $(function(){
       method:'PUT',
       url:`http://localhost:5000/api/jobs/editJob/${sessionStorage.getItem('job_id')}`,
       contentType: 'application/json',
+      headers: {
+            'Authorization': `Bearer ${token}` // ✅ Send token in headers
+      },
       data: JSON.stringify(formData),
       success:(job)=>{
-        alert(`Appointment Update Successfully!`);
-        loadPage('jobs.html', () => {
-          loadJobs(); // ✅ reload after page is loaded
-        });
+      loadPage('jobs.html', () => {        
+        loadJobs(); // ✅ reload after page is loaded
+      });
       },
       error:(xhr) => {
         alert(xhr.responseJSON?.error || 'job creation faild');
@@ -334,16 +399,22 @@ $(function(){
 
   //Delete content saved- onClick delete
   $(document).on('click','.btnDeleteJob',function(){
+
+    const token = localStorage.getItem('token');
+
     const jobId = $(this).val();
 
     $.ajax({
       method:'DELETE',
       url:`http://localhost:5000/api/jobs/deleteJob/${jobId}`,
+      headers: {
+          'Authorization': `Bearer ${token}` // ✅ Send token in headers
+      },
       contentType: 'application/json',
       success:(job)=>{
         alert(`Job post was deleted!`);
         loadPage('jobs.html', () => {
-          loadJobs(); 
+          loadJobs(); // ✅ reload after page is loaded
         });
       },
       error:(xhr) => {
